@@ -1,0 +1,32 @@
+# nginx proxy address - http://172.17.0.1:60026
+
+name: omnitools
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: lib0011/omni-tools:latest
+    container_name: omnitools-app
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
+    ports:
+      - '172.17.0.1:60026:80'
+    volumes:
+      - './rootfs/data/omnitools:/data:z'
+      - './rootfs/config/omnitools:/config:z'
+    networks:
+      - omnitools
+
+networks:
+  omnitools:
+    name: omnitools
+    external: false
