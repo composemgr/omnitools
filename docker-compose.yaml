@@ -21,8 +21,8 @@ services:
     ports:
       - '172.17.0.1:60026:80'
     volumes:
-      - './rootfs/data/omnitools:/data:z'
-      - './rootfs/config/omnitools:/config:z'
+      - './volumes/data/omnitools:/data:z'
+      - './volumes/config/omnitools:/config:z'
     networks:
       - omnitools
 
