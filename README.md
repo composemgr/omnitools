@@ -45,8 +45,8 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/data/omnitools` - Data storage
-- `./rootfs/config/omnitools` - Data storage
+- `./volumes/data/omnitools` - Data storage
+- `./volumes/config/omnitools` - Data storage
 
 ## 🔍 Logging
 
