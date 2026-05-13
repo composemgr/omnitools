@@ -18,6 +18,7 @@ services:
     environment:
       TZ: ${TZ:-America/New_York}
       HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
+      CONTAINER_NAME: omnitools-app
     ports:
       - '172.17.0.1:60026:80'
     volumes:
@@ -25,8 +26,30 @@ services:
       - './volumes/config/omnitools:/config:z'
     networks:
       - omnitools
+      - proxy
+      - cloudflare
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://omnitools-app:80'
+      - 'cloudflare.hostname=omnitools.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.omnitools-app.entrypoints=http'
+      - 'traefik.http.routers.omnitools-app-secure.tls=true'
+      - 'traefik.http.routers.omnitools-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.omnitools-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.omnitools-app.middlewares=omnitools-app-https-redirect'
+      - 'traefik.http.routers.omnitools-app-secure.entrypoints=https'
+      - 'traefik.http.routers.omnitools-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.omnitools-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.omnitools-app-secure.service=omnitools-app'
+      - 'traefik.http.services.omnitools-app.loadbalancer.server.port=80'
 
 networks:
   omnitools:
     name: omnitools
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
