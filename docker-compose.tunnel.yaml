@@ -1,0 +1,37 @@
+name: omnitools
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: lib0011/omni-tools:latest
+    container_name: omnitools-app
+    domainname: ${BASE_DOMAIN_NAME:-example.com}
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: omnitools-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
+    volumes:
+      - './volumes/data/omnitools:/data:z'
+      - './volumes/config/omnitools:/config:z'
+    labels:
+      - 'cloudflare.enable=true'
+      - 'cloudflare.service=http://omnitools-app:80'
+      - 'cloudflare.hostname=${BASE_HOST_NAME:-$HOSTNAME}'
+    networks:
+      - omnitools
+      - cloudflare
+
+networks:
+  omnitools:
+    name: omnitools
+    external: false
+  cloudflare:
+    external: true

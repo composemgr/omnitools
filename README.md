@@ -1,14 +1,25 @@
 ## 👋 Welcome to omnitools 🚀
 
-Self-hosted omnitools application
+Self-hosted collection of offline web utilities
 
 ## 📋 Description
 
-Self-hosted omnitools application
+OmniTools is a growing collection of self-hosted browser tools for image
+conversion, PDF page management, text diffing, and similar jobs that would
+otherwise require an upload to a third-party site. It runs entirely in the
+browser, so files never leave the machine.
+
+This is a single-service stack. OmniTools reads and writes its working files
+under `/data` and its settings under `/config`, both bind mounted so they
+survive image updates.
 
 ## 🚀 Services
 
 - **app**: lib0011/omni-tools:latest
+
+### Infrastructure Components
+
+None. OmniTools runs as a single container with no database or cache.
 
 ## 📦 Installation
 
@@ -21,7 +32,8 @@ curl -q -LSsf "https://raw.githubusercontent.com/composemgr/omnitools/main/docke
 ```bash
 git clone "https://github.com/composemgr/omnitools" ~/.local/srv/docker/omnitools
 cd ~/.local/srv/docker/omnitools
-docker compose up -d
+cp default.env .env
+docker compose --env-file .env up -d
 ```
 
 ### Option 3: Using composemgr
@@ -35,42 +47,92 @@ composemgr install omnitools
 
 ```shell
 TZ=America/New_York
+BASE_DOMAIN_NAME=example.com
+BASE_HOST_NAME=omnitools.example.com
 ```
 
 See `docker-compose.yaml` for complete list of configurable options.
 
+### Environment Files
+
+`default.env.sample` holds the full set of variables and is copied to `.env`
+before starting the stack:
+
+```bash
+cp default.env .env
+docker compose --env-file .env up -d
+```
+
+`app.env.sample` holds the app-specific overrides and is copied to `app.env`:
+
+```bash
+cp app.env.sample app.env
+```
+
+`composemgr up` applies `app.env` and `default.env` automatically. Raw
+`docker compose` commands need `--env-file .env` to pick up the same values.
+
+### Reverse Proxy
+
+Three standalone compose files ship in this repo:
+
+| File | Use |
+|------|-----|
+| `docker-compose.yaml` | Default, published on `172.17.0.1:64280` |
+| `docker-compose.traefik.yaml` | Behind an existing external `traefik` network |
+| `docker-compose.tunnel.yaml` | Behind an existing external `cloudflare` tunnel network |
+
+```bash
+docker compose -f docker-compose.traefik.yaml --env-file .env up -d
+```
+
+Only the `app` service carries the proxy labels and joins the external
+network.
+
 ## 🌐 Access
 
-- **Web Interface**: http://172.17.0.1:60026
+- **Web Interface**: http://172.17.0.1:64280
 
 ## 📂 Volumes
 
-- `./volumes/data/omnitools` - Data storage
-- `./volumes/config/omnitools` - Data storage
+- `./volumes/data/omnitools` - Working files, mounted at `/data`
+- `./volumes/config/omnitools` - Application settings, mounted at `/config`
+
+## 🔐 Security
+
+- OmniTools has no authentication, so anyone who can reach the port can use
+  the tools. Keep the port on the Docker host IP and put the stack behind a
+  reverse proxy with authentication if that is a problem for your network
+- Because the tools run in the browser, files are not uploaded to a third
+  party, but anything already in `/data` is reachable by anyone who can use
+  the app
+- Use HTTPS via the reverse proxy in production
+- Regularly update Docker images for security patches
+- Backup your data regularly
 
 ## 🔍 Logging
 
 ```shell
-docker compose logs -f app
+docker compose --env-file .env logs -f app
 ```
 
 ## 🛠️ Management
 
 ```bash
 # Start services
-docker compose up -d
+docker compose --env-file .env up -d
 
 # Stop services
-docker compose down
+docker compose --env-file .env down
 
 # Update to latest images
-docker compose pull && docker compose up -d
+docker compose --env-file .env pull && docker compose --env-file .env up -d
 
 # View logs
-docker compose logs -f
+docker compose --env-file .env logs -f
 
 # Restart services
-docker compose restart
+docker compose --env-file .env restart
 ```
 
 ## 📋 Requirements
