@@ -7,7 +7,7 @@ x-logging: &default-logging
 
 services:
   app:
-    image: lib0011/omni-tools:latest
+    image: iib0011/omni-tools:latest
     container_name: omnitools-app
     domainname: ${BASE_DOMAIN_NAME:-example.com}
     hostname: ${BASE_HOST_NAME:-$HOSTNAME}
@@ -18,9 +18,12 @@ services:
       TZ: ${TZ:-America/New_York}
       CONTAINER_NAME: omnitools-app
       HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
-    volumes:
-      - './volumes/data/omnitools:/data:z'
-      - './volumes/config/omnitools:/config:z'
+    healthcheck:
+      test: ['CMD', 'curl', '-s', '-o', '/dev/null', '--max-time', '5', 'http://127.0.0.1:80/']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     labels:
       - 'cloudflare.enable=true'
       - 'cloudflare.service=http://omnitools-app:80'

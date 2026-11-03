@@ -15,7 +15,7 @@ survive image updates.
 
 ## 🚀 Services
 
-- **app**: lib0011/omni-tools:latest
+- **app**: iib0011/omni-tools:latest
 
 ### Infrastructure Components
 
